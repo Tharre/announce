@@ -2,10 +2,10 @@
 # Makefile for tinysvcmdns
 #
 
-CFLAGS += -Wall -pedantic -std=gnu99
+CFLAGS += -Wall -pedantic -std=gnu99 -static -fPIE
 #CFLAGS += -g
 CFLAGS += -O2 -DNDEBUG
-LDLIBS = -lpthread
+LDFLAGS += -pie
 
 ifneq ($(CROSS_COMPILE),)
   CC = gcc
@@ -29,7 +29,7 @@ clean:
 
 tinysvcmdns: tinysvcmdns.o
 
-announce: announce.o libtinysvcmdns.a
+announce: announce.o libtinysvcmdns.a ifaddrs.o
 
 libtinysvcmdns.a: $(patsubst %, libtinysvcmdns.a(%), $(LIBTINYSVCMDNS_OBJS))
 

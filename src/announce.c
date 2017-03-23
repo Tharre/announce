@@ -1,4 +1,4 @@
-/* 
+/*
  * Based on abrasive/shairport/master/mdns_tinysvcmdns.c
  * Copyright (c) 2013 Paul Lietar
  * Copyright (c) 2015 Simon Peter
@@ -26,7 +26,7 @@
  */
 
 #include <sys/socket.h>
-#include <ifaddrs.h>
+#include "ifaddrs.h"
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <signal.h>
@@ -35,7 +35,7 @@
 #include <netdb.h>
 #include <string.h>
 #include <sys/types.h>
-#include <net/if.h> 
+#include <net/if.h>
 #include <unistd.h>
 #include <netinet/in.h>
 
@@ -81,7 +81,21 @@ int main(int argc, char *argv[]) {
 
     // room for name + .local + NULL
     char hostname[100 + 6];
-    gethostname(hostname, 99);
+    /*gethostname(hostname, 99);*/
+
+    FILE *fd = fopen("/data/hostname", "r");
+    if (!fd) {
+        perror("tinysvcmdns: failed to read /data/hostname\n");
+        return -1;
+    }
+
+    if (fread(hostname, 1, 99, fd) < 2) {
+        perror("tinysvcmdns: hostname too short\n");
+        return -1;
+    }
+
+    fclose(fd);
+
     // according to POSIX, this may be truncated without a final NULL !
     hostname[99] = 0;
 
@@ -175,7 +189,7 @@ int main(int argc, char *argv[]) {
         mdns_service_destroy(svc0);
     } else {
         printf("- uhttpd is NOT running\n");
-    } 
+    }
 
     if(pidof("dropbear")) {
         printf("* dropbear is running; assuming port 22\n");
@@ -189,7 +203,7 @@ int main(int argc, char *argv[]) {
         mdns_service_destroy(svc1);
     } else {
         printf("- dropbear is NOT running\n");
-    } 
+    }
 
     if(access("/usr/libexec/sftp-server", F_OK) != -1) {
         printf("* /usr/libexec/sftp-server exists; assuming port 22\n");
@@ -205,7 +219,7 @@ int main(int argc, char *argv[]) {
         printf("- /usr/libexec/sftp-server does not exist\n");
     }
 
-    /* 
+    /*
     if(access("/sys/bus/usb-serial/drivers/ftdi_sio/ttyUSB0", F_OK) != -1) {
         printf("* /sys/bus/usb-serial/drivers/ftdi_sio/ttyUSB0 exists; assuming Arduino\n");
     } else {
