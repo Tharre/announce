@@ -1,6 +1,6 @@
 // This file is the concatenation of mdnsd.c and mdns.c
 // from tinysvcmdns with minor modifications
-// The code was taken from 
+// The code was taken from
 // https://raw.githubusercontent.com/mikebrady/shairport-sync/tinysvcmdns.h
 // at revision 44c34f6dab6fb80d08418a9f328c674d6c644fd6
 
@@ -1119,10 +1119,18 @@ static int create_recv_sock() {
         memset(&mreq, 0, sizeof(struct ip_mreq));
         mreq.imr_interface.s_addr = htonl(INADDR_ANY);
         mreq.imr_multiaddr.s_addr = inet_addr(MDNS_ADDR);
+
+        while (setsockopt(sd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *) &mreq, sizeof(mreq)) < 0) {
+            // network is probably down, so sleep ...
+            sleep(10);
+        }
+
+        /*
         if ((r = setsockopt(sd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *) &mreq, sizeof(mreq))) < 0) {
                 // log_message(LOG_ERR, "recv setsockopt(IP_ADD_MEMBERSHIP): %m");
                 return r;
         }
+        */
 
         // enable loopback in case someone else needs the data
         if ((r = setsockopt(sd, IPPROTO_IP, IP_MULTICAST_LOOP, (char *) &on, sizeof(on))) < 0) {
